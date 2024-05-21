@@ -7,29 +7,20 @@ using FoolGame.Properties;
 
 namespace FoolGame
 {
-    public class Player
+    public abstract class Player
     {
-        public ObservableCollection<Card> cards;
+        public readonly ObservableCollection<Card> cards;
         public readonly String name;
         public bool isInGame;
 
-        public Player(ObservableCollection<Card> cards, string name)
+        protected Player(ObservableCollection<Card> cards, string name)
         {
             this.cards = cards;
             this.name = name;
-            // this.cards = new ObservableCollection<Card>(this.cards.OrderBy(card => card.value));
         }
 
-        public void Move(Card card)
-        {
-            cards.Remove(card);
-        }
-
-        // public void AddCard(Card card)
-        // {
-        //     cards.Add(card);
-        //     this.cards = new ObservableCollection<Card>(this.cards.OrderBy(currentCard => card.value));
-        // }
+        abstract public void Move(Card card);
+        
     }
 
 

@@ -5,15 +5,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using FoolGame.Utils;
+using FoolGameWpf;
+using FoolGameWpf.entities;
 
 
 namespace FoolGame
 {
-    internal class GameViewModel
+    public class GameViewModel
     {
         private List<Player> players = new List<Player>();
         private ObservableCollection<Card> currentStack = new ObservableCollection<Card>();
-        
+
         private bool gameIsOver;
         private int currentMove;
         private Card trumpCard;
@@ -24,112 +26,130 @@ namespace FoolGame
         public List<Player> Players => players;
         public ObservableCollection<Card> CurrentStack => currentStack;
         public bool GameIsOver => GameIsFinished();
+        public bool CurrentMoveIsAssault => currentMovIsAssault;
         public int CurrentMove => currentMove;
+
         public Card TrumpCard => trumpCard;
 
-        public void StartGame(int playerCounts, String[] playersName)
+        public void StartGame(int playerCounts, string[] playersName, bool isBot = true)
         {
-            if (playerCounts > 6)
-                throw new Exception();
-
             DeckOfCard.ShuffleDeck();
-            SetPlayers(playerCounts, playersName);
+            SetPlayers(playerCounts, playersName, isBot);
             trumpCard = DeckOfCard.GetCardsFromDeck(1)[0];
-            currentMove = SetFirstMove();
+            SetFirstMove();
             currentMovIsAssault = true;
             currentMoveStates.emit(new AssaultMove());
-        }
 
-
-        public void Move(Card cardMoved)
-        {
-            if (currentMovIsAssault)
+            if (players[currentMove] is BotPlayer)
             {
-                MoveAssault(cardMoved);
-            }
-            else
-            {
-                MoveBack(cardMoved);
+                BotMove();
             }
         }
 
-        private void MoveAssault(Card cardMoved)
+        public void Move(Card cardMoved = null)
         {
-            if (currentStack.Count == 0)
+            if (cardMoved == null)
             {
-                Move(currentMove, cardMoved);
-                SetNextMove();
-                currentMovIsAssault = !currentMovIsAssault;
-                currentMoveStates.emit(new DefenseMove());
+                if (currentMovIsAssault)
+                {
+                    Pass();
+                    SetNextMove();
+                }
+                else
+                {
+                    TakeCards();
+                    SetNextMove(2);
+                    currentMovIsAssault = !currentMovIsAssault;
+                }
+            }
+
+            else if (!(currentMovIsAssault && CanMoveAssault(cardMoved)) &&
+                !(!currentMovIsAssault && CanMoveBack(cardMoved)))
+            {
+                currentMoveStates.emit(new InabilityMove());
                 return;
             }
+
+            MakeMove(cardMoved);
+
+            if (cardMoved != null)
+            {
+                SetNextMove();
+                currentMovIsAssault = !currentMovIsAssault;
+            }
+
+            if (players[currentMove] is BotPlayer)
+            {
+                BotMove();
+            }
+        }
+
+        private void ChangeMove()
+        {
+            if (currentMovIsAssault)
+                currentMoveStates.emit(new AssaultMove());
+            else
+                currentMoveStates.emit(new DefenseMove());
+            currentMoveStates.emit(new ChangeMove());
+        }
+
+        private bool CanMoveAssault(Card cardMoved)
+        {
+            if (currentStack.Count == 0)
+                return true;
 
             foreach (var card in currentStack)
             {
                 if (card.value == cardMoved.value)
-                {
-                    Move(currentMove, cardMoved);
-                    SetNextPlayersMove();
-                    currentMovIsAssault = !currentMovIsAssault;
-                    currentMoveStates.emit(new DefenseMove());
-                    return;
-                }
+                    return true;
             }
 
-            currentMoveStates.emit(new InabilityMove());
+            return false;
         }
 
-        public void MoveBack(Card card)
+        private bool CanMoveBack(Card card)
         {
             if ((currentStack.Last().suit == card.suit && currentStack.Last().value < card.value)
                 || (currentStack.Last().suit != trumpCard.suit && trumpCard.suit == card.suit))
             {
-                Move(currentMove, card);
-                SetNextPlayersMove();
-                currentMovIsAssault = !currentMovIsAssault;
-                currentMoveStates.emit(new AssaultMove());
-                return;
+                return true;
             }
 
-            currentMoveStates.emit(new InabilityMove());
+            return false;
         }
 
-        private void Move(int currentPlayer, Card card)
+        private void MakeMove(Card card)
         {
-            players[currentPlayer].Move(card);
+            players[currentMove].Move(card);
             currentStack.Add(card);
-        }
-
-        private void SetNextPlayersMove()
-        {
-            if (currentMove + 1 > players.Count - 1)
-            {
-                currentMoveStates.emit(new FirstPlayerMove());
-                currentMove = 0;
-            }
-            else
-            {
-                currentMoveStates.emit(new SecondPlayerMove());
-                currentMove += +1;
-            }
         }
 
         private void SetNextMove(int step = 1)
         {
-            FillMissingCards();
             for (int i = 0; i < step; i++)
             {
-                SetNextPlayersMove();
+                if (currentMove + 1 > players.Count - 1)
+                    currentMove = 0;
+                else
+                    currentMove += +1;
             }
+
+            ChangeMove();
         }
 
-        public void Pass()
+        private void BotMove()
+        {
+            var card = ((BotPlayer)players[currentMove]).GetMoveCard(currentMovIsAssault);
+            Move(card);
+        }
+
+        private void Pass()
         {
             currentStack.Clear();
-            SetNextMove();
+            FillMissingCards();
         }
 
-        public void TakeCards()
+        private void TakeCards()
         {
             foreach (var card in currentStack)
             {
@@ -137,6 +157,7 @@ namespace FoolGame
             }
 
             currentStack.Clear();
+            FillMissingCards();
             SetNextMove(2);
         }
 
@@ -154,7 +175,7 @@ namespace FoolGame
             }
         }
 
-        private int SetFirstMove()
+        private void SetFirstMove()
         {
             Value currentMinValue = Value.ACE;
             int i = -1;
@@ -172,21 +193,23 @@ namespace FoolGame
                 }
             }
 
-            if (firstMove == 0)
-                currentMoveStates.emit(new FirstPlayerMove());
-            else
-                currentMoveStates.emit(new SecondPlayerMove());
-
-            return firstMove;
+            currentMove = firstMove;
+            if (firstMove != 0)
+                currentMoveStates.emit(new ChangeMove());
         }
 
 
-        private void SetPlayers(int playerCounts, string[] names)
+        private void SetPlayers(int playerCounts, IReadOnlyList<string> names, bool isBot)
         {
-            for (int i = 0; i < playerCounts; i++)
+            for (int i = 0; i < playerCounts - 1; i++)
             {
-                players.Add(new Player(DeckOfCard.GetCardsFromDeck(6), names[i]));
+                players.Add(new Person(DeckOfCard.GetCardsFromDeck(6), names[i]));
             }
+
+            if (isBot)
+                players.Add(new BotPlayer(DeckOfCard.GetCardsFromDeck(6), currentStack));
+            else
+                players.Add(new Person(DeckOfCard.GetCardsFromDeck(6), names[playerCounts - 1]));
         }
 
         private bool GameIsFinished()

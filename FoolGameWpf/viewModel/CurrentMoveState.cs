@@ -1,9 +1,8 @@
 ﻿namespace FoolGame
 {
-    public class CurrentMoveState {}
-
-    public class FirstPlayerMove: CurrentMoveState {} 
-    public class SecondPlayerMove: CurrentMoveState {}
+    public abstract class CurrentMoveState { }
+    
+    public class ChangeMove : CurrentMoveState{}
     public class InabilityMove: CurrentMoveState{}
     
     public class AssaultMove: CurrentMoveState{}

@@ -16,6 +16,11 @@ namespace FoolGame
             this.imageName = imageName;
         }
 
+        public bool HigherThen(Card card)
+        {
+            return value > card.value && suit == card.suit;
+        }
+
         public override string ToString()
         {
             return value + " of " + suit;

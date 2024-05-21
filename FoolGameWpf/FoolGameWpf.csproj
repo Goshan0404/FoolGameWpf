@@ -51,6 +51,12 @@
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </ApplicationDefinition>
+        <Compile Include="entities\bot\BotPlayer.cs" />
+        <Compile Include="entities\bot\ManagerMoves.cs" />
+        <Compile Include="entities\bot\Node.cs" />
+        <Compile Include="entities\bot\ThreeAssaultMove.cs" />
+        <Compile Include="entities\bot\ThreeDefenseMoves.cs" />
+        <Compile Include="entities\Person.cs" />
         <Compile Include="Utils\Constants.cs" />
         <Compile Include="viewModel\CurrentMoveState.cs" />
         <Compile Include="viewModel\GameViewModel.cs" />

@@ -7,45 +7,34 @@ using FoolGame;
 
 namespace FoolGameWpf
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow
     {
         private GameViewModel viewModel = new GameViewModel();
-
+        
         public MainWindow()
         {
             InitializeComponent();
+            SecondPlayerCards.Visibility = Visibility.Hidden;
+            
             ObserveMoveState();
             viewModel.StartGame(2, new[] { "Lox", "One More Lox" });
+            
             TrumpCard.Source = new BitmapImage(new Uri(viewModel.TrumpCard.imageName, UriKind.Relative));
-
             FirstPlayerCards.ItemsSource = viewModel.Players[0].cards;
             SecondPlayerCards.ItemsSource = viewModel.Players[1].cards;
             CurrentStackOfCards.ItemsSource = viewModel.CurrentStack;
-
-            
-            
-            
         }
 
         private void ObserveMoveState()
         {
             viewModel.currentMoveStates.Observe((currentMoveState) =>
             {
-                if (currentMoveState is FirstPlayerMove)
+                if (currentMoveState is ChangeMove)
                 {
-                    FirstPlayerCards.IsEnabled = true;
-                    SecondPlayerCards.IsEnabled = false;
+                    FirstPlayerCards.ChangeVisible();
+                    SecondPlayerCards.ChangeVisible();
                 }
-
-                if (currentMoveState is SecondPlayerMove)
-                {
-                    FirstPlayerCards.IsEnabled = false;
-                    SecondPlayerCards.IsEnabled = true;
-                }
-
+                
                 if (currentMoveState is InabilityMove)
                 {
                     MessageBox.Show("Такой картой нельзя сходить");
@@ -75,13 +64,23 @@ namespace FoolGameWpf
 
         void OnPassButtonClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            viewModel.Pass();
+            viewModel.Move();
         }
 
         void OnTakeButtonClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            viewModel.TakeCards();
+            viewModel.Move();
         }
-        
+    }
+
+    static class ListViewExtension
+    {
+        public  static void ChangeVisible(this ListView listView)
+        {
+            if (listView.Visibility == Visibility.Visible)
+                listView.Visibility = Visibility.Hidden;
+            else
+                listView.Visibility = Visibility.Visible;
+        }
     }
 }

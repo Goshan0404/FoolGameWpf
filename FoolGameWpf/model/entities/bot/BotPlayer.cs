@@ -9,19 +9,19 @@ namespace FoolGameWpf
     public class BotPlayer : Player
     {
         private List<Card> memoryOfCards = new List<Card>();
-        private ManagerMoves managerMoves;
+        private BotManagerMoves _botManagerMoves;
 
 
         public BotPlayer(ObservableCollection<Card> cards, ObservableCollection<Card> currentStackCards) : base(cards,
             "Bot")
         {
-            managerMoves = new ManagerMoves(cards, currentStackCards,
+            _botManagerMoves = new BotManagerMoves(cards, currentStackCards,
                 memoryOfCards);
         }
 
         public Card GetMoveCard(bool currentMoveIsAssault)
         {
-            return managerMoves.GetMoveCard(currentMoveIsAssault);
+            return _botManagerMoves.GetMoveCard(currentMoveIsAssault);
         }
 
         public override void Move(Card card)

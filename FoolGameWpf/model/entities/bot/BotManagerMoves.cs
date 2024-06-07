@@ -5,14 +5,14 @@ using FoolGame;
 
 namespace FoolGameWpf.entities.bot
 {
-    public class ManagerMoves
+    public class BotManagerMoves
     {
         private List<Card> memoryOfCards;
         private ObservableCollection<Card> cardsInStack;
         private ThreeAssaultMove threeAssaultMove;
         private ThreeDefenseMoves threeDefenseMoves; 
 
-        public ManagerMoves(ObservableCollection<Card> botCards, ObservableCollection<Card> cardsInStack, List<Card> memoryOfCards)
+        public BotManagerMoves(ObservableCollection<Card> botCards, ObservableCollection<Card> cardsInStack, List<Card> memoryOfCards)
         {
             this.cardsInStack = cardsInStack;
             this.memoryOfCards = memoryOfCards;

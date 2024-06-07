@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,46 +11,59 @@ namespace FoolGameWpf
     public partial class MainWindow
     {
         private GameViewModel viewModel = new GameViewModel();
+        private List<ListView> players = new List<ListView>();
         
         public MainWindow()
         {
             InitializeComponent();
-            SecondPlayerCards.Visibility = Visibility.Hidden;
-            
+            viewModel.StartGame(2, new[] { "First Person", "Second Person" });
             ObserveMoveState();
-            viewModel.StartGame(2, new[] { "Lox", "One More Lox" });
             
-            TrumpCard.Source = new BitmapImage(new Uri(viewModel.TrumpCard.imageName, UriKind.Relative));
+            CurrentStackOfCards.ItemsSource = viewModel.CurrentStack;
+            TrumpCard.Source = new BitmapImage(new Uri(viewModel.TrumpCard.imageName, UriKind.Relative)); 
             FirstPlayerCards.ItemsSource = viewModel.Players[0].cards;
             SecondPlayerCards.ItemsSource = viewModel.Players[1].cards;
-            CurrentStackOfCards.ItemsSource = viewModel.CurrentStack;
+            players.Add(FirstPlayerCards);
+            players.Add(SecondPlayerCards);
+            
+            foreach (var listView in players)
+            {
+                listView.ChangeVisible();
+            }
+            players[viewModel.FirstMove].ChangeVisible();
+            TakeButton.IsEnabled = false;
+
+            viewModel.MoveIfBotRound();
         }
 
         private void ObserveMoveState()
         {
-            viewModel.currentMoveStates.Observe((currentMoveState) =>
+            viewModel.viewMoveState.Observe((currentMoveState) =>
             {
-                if (currentMoveState is ChangeMove)
+                if (currentMoveState is ChangeCurrentStep move)
                 {
-                    FirstPlayerCards.ChangeVisible();
-                    SecondPlayerCards.ChangeVisible();
+                    var firstPosition = move.FirstPosition; 
+                    var secondPosition =  move.SecondPosition; 
+                    
+                    players[firstPosition].ChangeVisible();
+                    players[secondPosition].ChangeVisible();
+
+                    if (viewModel.MoveIsAssualt())
+                    {
+                        TakeButton.IsEnabled = false;
+                        PassButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        TakeButton.IsEnabled = true;
+                        PassButton.IsEnabled = false;
+                    }
+                 
                 }
-                
+
                 if (currentMoveState is InabilityMove)
                 {
                     MessageBox.Show("Такой картой нельзя сходить");
-                }
-
-                if (currentMoveState is AssaultMove)
-                {
-                    TakeButton.IsEnabled = false;
-                    PassButton.IsEnabled = true;
-                }
-
-                if (currentMoveState is DefenseMove)
-                {
-                    PassButton.IsEnabled = false;
-                    TakeButton.IsEnabled = true;
                 }
             });
         }

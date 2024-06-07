@@ -51,14 +51,21 @@
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </ApplicationDefinition>
-        <Compile Include="entities\bot\BotPlayer.cs" />
-        <Compile Include="entities\bot\ManagerMoves.cs" />
-        <Compile Include="entities\bot\Node.cs" />
-        <Compile Include="entities\bot\ThreeAssaultMove.cs" />
-        <Compile Include="entities\bot\ThreeDefenseMoves.cs" />
-        <Compile Include="entities\Person.cs" />
+        <Compile Include="model\entities\bot\BotManagerMoves.cs" />
+        <Compile Include="model\entities\bot\BotPlayer.cs" />
+        <Compile Include="model\entities\bot\Node.cs" />
+        <Compile Include="model\entities\bot\ThreeAssaultMove.cs" />
+        <Compile Include="model\entities\bot\ThreeDefenseMoves.cs" />
+        <Compile Include="model\entities\Card.cs" />
+        <Compile Include="model\entities\DeckOfCard.cs" />
+        <Compile Include="model\entities\Person.cs" />
+        <Compile Include="model\entities\Player.cs" />
+        <Compile Include="model\entities\Suit.cs" />
+        <Compile Include="model\entities\Value.cs" />
+        <Compile Include="model\MoveState.cs" />
+        <Compile Include="model\ManagerCards.cs" />
         <Compile Include="Utils\Constants.cs" />
-        <Compile Include="viewModel\CurrentMoveState.cs" />
+        <Compile Include="viewModel\ViewState.cs" />
         <Compile Include="viewModel\GameViewModel.cs" />
         <Compile Include="viewModel\ObservableState.cs" />
         <Page Include="MainWindow.xaml">
@@ -69,11 +76,6 @@
             <DependentUpon>App.xaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Include="entities\Card.cs" />
-        <Compile Include="entities\DeckOfCard.cs" />
-        <Compile Include="entities\Player.cs" />
-        <Compile Include="entities\Suit.cs" />
-        <Compile Include="entities\Value.cs" />
         <Compile Include="MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
             <SubType>Code</SubType>
